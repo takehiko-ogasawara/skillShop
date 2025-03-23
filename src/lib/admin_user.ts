@@ -19,6 +19,7 @@ export async function loginAdminUser(username: string, password: string): Promis
     .from<AdminUser>(ADMIN_USERS_TABLE)
     .select('*')
     .eq('username', username)
+    .limit(1)
     .single();
 
   if (fetchError || !data) {

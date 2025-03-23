@@ -31,6 +31,7 @@ export async function loginCustomerUser(username: string, password: string): Pro
       .from<CustomerUser>(CUSTOMER_USERS_TABLE)
       .select('*')
       .eq('username', username)
+      .limit(1)
       .single();
 
     data = response.data;
