@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { hashPassword, verifyPassword } from './auth';
+import { hashPassword } from './auth';
 
 // 顧客ユーザーの型定義
 export interface CustomerUser {
@@ -22,81 +22,105 @@ export const CUSTOMER_USERS_TABLE = 'customer_users';
 export async function loginCustomerUser(username: string, password: string): Promise<CustomerUser> {
   console.log('ログイン試行:', { username: username });
 
-  let data: CustomerUser | null = null;
-  let fetchError: any = null;
-
   try {
-    // ユーザー名でユーザーを検索
-    const response = await supabase
+    // Supabaseの認証システムを使用してログイン
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email: username, // ユーザー名をメールアドレスとして使用
+      password: password
+    });
+
+    if (authError) {
+      console.error('認証エラー:', authError);
+      throw new Error('ユーザー名またはパスワードが正しくありません');
+    }
+
+    // 認証成功後、ユーザー情報を取得
+    const { data, error: fetchError } = await supabase
       .from<CustomerUser>(CUSTOMER_USERS_TABLE)
       .select('*')
       .eq('username', username)
-      .limit(1)
       .single();
 
-    data = response.data;
-    fetchError = response.error;
+    if (fetchError || !data) {
+      console.error('ユーザー情報取得エラー:', fetchError);
+      throw new Error('ユーザー情報の取得に失敗しました');
+    }
+
+    return data;
   } catch (error: any) {
-    console.error('Supabaseエラー:', error);
-    throw new Error('ユーザー名またはパスワードが正しくありません'); // Supabase APIエラーをキャッチ
-  }
-
-  if (fetchError || !data) {
-    console.log('ユーザーが見つかりませんでした:', { fetchError: fetchError, data: data });
+    console.error('ログインエラー:', error);
     throw new Error('ユーザー名またはパスワードが正しくありません');
   }
-
-  console.log('ユーザーデータ:', { data: data });
-
-  // パスワードを検証
-  const isValid = await verifyPassword(password, data.pass);
-  console.log('パスワード検証:', { isValid: isValid });
-  if (!isValid) {
-    throw new Error('ユーザー名またはパスワードが正しくありません');
-  }
-
-  return data;
 }
 
-// 顧客ユーザー登録処理
+/**
+ * 顧客ユーザー登録処理
+ * @param {string} username ユーザー名
+ * @param {string} password パスワード
+ * @returns {Promise<CustomerUser>} 登録された顧客ユーザー情報
+ * @throws {Error} 登録に失敗した場合のエラーメッセージ
+ */
 export async function registerCustomerUser(username: string, password: string): Promise<CustomerUser> {
-  // ユーザー名が既に存在するか確認
-  await new Promise(resolve => setTimeout(resolve, 500)); // 0.5秒待機
+  try {
+    // ユーザー名が既に存在するか確認
+    const { data: existingUser, error: checkError } = await supabase
+      .from<CustomerUser>(CUSTOMER_USERS_TABLE)
+      .select('*')
+      .eq('username', username)
+      .single();
 
-  const { data: existingUser, error } = await supabase
-    .from<CustomerUser>(CUSTOMER_USERS_TABLE)
-    .select('*')
-    .eq('username', username)
-    .limit(1)
-    .single();
+    if (checkError && checkError.code !== 'PGRST116') { // PGRST116は「データが見つからない」エラー
+      console.error('ユーザー名確認エラー:', checkError);
+      throw new Error('ユーザー名の確認に失敗しました');
+    }
 
-  console.log('existingUser:', existingUser);
+    if (existingUser) {
+      throw new Error('このユーザー名は既に使用されています');
+    }
 
-  if (error) {
-    console.error('ユーザー名確認エラー:', error);
-    throw new Error('ユーザー名の確認に失敗しました');
+    // パスワードをハッシュ化
+    const hashedPassword = await hashPassword(password);
+
+    // Supabaseの認証システムを使用してユーザーを作成
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: username, // ユーザー名をメールアドレスとして使用
+      password: password
+    });
+
+    if (authError) {
+      console.error('認証エラー:', authError);
+      throw new Error('ユーザー登録に失敗しました');
+    }
+
+    if (!authData.user) {
+      throw new Error('ユーザー登録に失敗しました');
+    }
+
+    // 認証成功後、ユーザー情報を保存
+    const { data, error: insertError } = await supabase
+      .from<CustomerUser>(CUSTOMER_USERS_TABLE)
+      .insert([
+        { 
+          username, 
+          pass: hashedPassword,
+          customer_user_id: parseInt(authData.user.id) // Supabaseの認証IDを使用
+        } 
+      ])
+      .select()
+      .single();
+
+    if (insertError || !data) {
+      console.error('ユーザー情報保存エラー:', insertError);
+      // エラーが発生した場合、作成された認証ユーザーを削除
+      await supabase.auth.admin.deleteUser(authData.user.id);
+      throw new Error('ユーザー情報の保存に失敗しました');
+    }
+
+    return data;
+  } catch (error: any) {
+    console.error('登録エラー:', error);
+    throw new Error(error.message || 'ユーザー登録に失敗しました');
   }
-
-  if (existingUser !== null) {
-    throw new Error('このユーザー名は既に使用されています');
-  }
-
-  // パスワードをハッシュ化
-  const hashedPassword = await hashPassword(password);
-  
-  // 新しいユーザーを作成
-  const { data, error: insertError } = await supabase
-    .from<CustomerUser>(CUSTOMER_USERS_TABLE)
-    .insert([
-      { username, pass: hashedPassword } as Partial<CustomerUser>
-    ])
-    .single();
-
-  if (insertError || !data) {
-    throw new Error('ユーザー登録に失敗しました: ' + (insertError?.message || '不明なエラー'));
-  }
-
-  return data;
 }
 
 // 顧客ユーザー情報取得処理

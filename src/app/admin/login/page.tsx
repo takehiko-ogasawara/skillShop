@@ -47,12 +47,12 @@ export default function AdminLogin() {
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           <div>
             <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-              管理者ユーザー名
+              管理者メールアドレス
             </label>
             <input
               id="username"
               name="username"
-              type="text"
+              type="email"
               required
               value={username}
               onChange={(e) => setUsername(e.target.value)}
