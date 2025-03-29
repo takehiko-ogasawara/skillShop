@@ -1,12 +1,29 @@
-import bcrypt from 'bcryptjs';
+import { createHash } from 'crypto';
 
-// ハッシュ化されたパスワードを生成する
+/**
+ * パスワードをハッシュ化する
+ * @param {string} password ハッシュ化するパスワード
+ * @returns {Promise<string>} ハッシュ化されたパスワード
+ */
 export async function hashPassword(password: string): Promise<string> {
-  const salt = await bcrypt.genSalt(10);
-  return bcrypt.hash(password, salt);
+  return new Promise((resolve, reject) => {
+    try {
+      const hash = createHash('sha256');
+      hash.update(password);
+      resolve(hash.digest('hex'));
+    } catch (error) {
+      reject(error);
+    }
+  });
 }
 
-// パスワードを検証する
+/**
+ * パスワードが正しいか検証する
+ * @param {string} password 検証するパスワード
+ * @param {string} hashedPassword ハッシュ化されたパスワード
+ * @returns {Promise<boolean>} パスワードが正しい場合はtrue
+ */
 export async function verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
-  return bcrypt.compare(password, hashedPassword);
-}
+  const hashedInput = await hashPassword(password);
+  return hashedInput === hashedPassword;
+} 

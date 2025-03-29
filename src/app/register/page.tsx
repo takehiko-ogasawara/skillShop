@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, FormEvent } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { registerCustomerUser } from '../../lib/customer_user'
+import { validatePassword } from '../../lib/validations/password'
 
 export default function Register() {
   const [username, setUsername] = useState('')
@@ -12,6 +13,7 @@ export default function Register() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -27,11 +29,16 @@ export default function Register() {
     console.log('Registering user:', { username, password });
 
     try {
+      // パスワードバリデーションを実行
+      await validatePassword(password)
       // 顧客ユーザー登録関数を使用
       await registerCustomerUser(username, password)
       
-      // 登録成功 - ログインページにリダイレクト
-      router.push('/login')
+      // リダイレクト元のURLを取得
+      const redirectedFrom = searchParams.get('redirectedFrom') || '/'
+      
+      // ログイン成功 - リダイレクト元のページに移動
+      router.push(redirectedFrom)
     } catch (err: any) {
       console.error('Registration error:', err);
       setError(err.message)
@@ -57,12 +64,12 @@ export default function Register() {
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           <div>
             <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-              ユーザー名
+              メールアドレス
             </label>
             <input
               id="username"
               name="username"
-              type="text"
+              type="email"
               required
               value={username}
               onChange={(e) => setUsername(e.target.value)}

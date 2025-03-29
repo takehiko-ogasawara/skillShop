@@ -1,0 +1,60 @@
+{
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "editor.tabSize": 2,
+  "files.encoding": "utf8",
+  "files.eol": "\n",
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "javascript.suggest.autoImports": true,
+  "typescript.suggest.autoImports": true,
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "editor.rulers": [80],
+  "files.associations": {
+    "*.tsx": "typescriptreact",
+    "Dockerfile": "dockerfile",
+    "docker-compose.yml": "yaml"
+  },
+  "remote.containers.defaultExtensions": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "ms-azuretools.vscode-docker"
+  ],
+  "remote.containers.workspaceMountConsistency": "consistent",
+  "remote.containers.buildVolume": "skillshop-node-modules",
+  "remote.containers.cacheVolume": true,
+  "terminal.integrated.defaultProfile.linux": "bash",
+  "editor.suggestSelection": "first",
+  "editor.wordWrap": "on",
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "docker.commands.attach": "exec -it ${containerId} /bin/bash",
+  "docker.commands.run": "run --rm -it ${image} /bin/bash",
+  "docker.commands.compose": "docker compose",
+  "docker.commands.composeBuild": "docker compose build",
+  "docker.commands.composeUp": "docker compose up",
+  "docker.commands.composeDown": "docker compose down",
+  "docker.commands.composeLogs": "docker compose logs",
+  "docker.commands.composePs": "docker compose ps",
+  "codeChangeRules": {
+    "strictMode": true,
+    "preserveExistingFunctionality": true,
+    "onlyModifySpecifiedParts": true,
+    "maintainSecurityFeatures": true,
+    "documentation": {
+      "required": true,
+      "includeOriginalBehavior": true
+    }
+  }
+} 

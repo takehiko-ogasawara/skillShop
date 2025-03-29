@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, FormEvent } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, FormEvent, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { loginCustomerUser } from '../../lib/customer_user'
 
@@ -11,6 +11,7 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -21,8 +22,11 @@ export default function Login() {
       // 顧客ユーザーログイン関数を使用
       await loginCustomerUser(username, password)
       
-      // ログイン成功 - ホームページにリダイレクト
-      router.push('/')
+      // リダイレクト元のURLを取得
+      const redirectedFrom = searchParams.get('redirectedFrom') || '/'
+      
+      // ログイン成功 - リダイレクト元のページに移動
+      router.push(redirectedFrom)
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -35,7 +39,7 @@ export default function Login() {
       <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md">
         <div className="text-center">
           <h1 className="text-3xl font-bold">ログイン</h1>
-          <p className="mt-2 text-gray-600">Skill Shopへようこそ</p>
+          <p className="mt-2 text-gray-600">Skill Shopにログイン</p>
         </div>
 
         {error && (
@@ -47,12 +51,12 @@ export default function Login() {
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           <div>
             <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-              ユーザー名
+              メールアドレス
             </label>
             <input
               id="username"
               name="username"
-              type="text"
+              type="email"
               required
               value={username}
               onChange={(e) => setUsername(e.target.value)}
