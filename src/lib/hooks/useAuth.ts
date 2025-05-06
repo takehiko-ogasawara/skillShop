@@ -1,36 +1,37 @@
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { supabase } from '../supabase'
+import { useState, useEffect } from 'react'
+import { CustomerUser, getCustomerUserById } from '../customer_user'
 
-export const useAuth = () => {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(true)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+export function useAuth() {
+  const [user, setUser] = useState<CustomerUser | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        setIsAuthenticated(!!session)
-      } catch (error) {
-        console.error('認証チェックエラー:', error)
-        setIsAuthenticated(false)
-      } finally {
-        setIsLoading(false)
-      }
+    // セッションストレージからユーザー情報を取得
+    const storedUser = sessionStorage.getItem('user')
+    if (storedUser) {
+      const userData = JSON.parse(storedUser)
+      setUser(userData)
     }
+    setLoading(false)
+  }, [])
 
-    checkAuth()
+  const isAuthenticated = !!user
 
-    // 認証状態の変更を監視
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsAuthenticated(!!session)
-    })
+  const login = (userData: CustomerUser) => {
+    setUser(userData)
+    sessionStorage.setItem('user', JSON.stringify(userData))
+  }
 
-    return () => {
-      subscription.unsubscribe()
-    }
-  }, [router])
+  const logout = () => {
+    setUser(null)
+    sessionStorage.removeItem('user')
+  }
 
-  return { isLoading, isAuthenticated }
+  return {
+    user,
+    loading,
+    isAuthenticated,
+    login,
+    logout
+  }
 } 

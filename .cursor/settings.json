@@ -47,6 +47,20 @@
   "docker.commands.composeDown": "docker compose down",
   "docker.commands.composeLogs": "docker compose logs",
   "docker.commands.composePs": "docker compose ps",
+  "docker.commands.composeExec": "docker compose exec web",
+  "docker.commands.composeExecNpm": "docker compose exec web npm",
+  "docker.commands.composeExecYarn": "docker compose exec web yarn",
+  "docker.commands.composeExecPnpm": "docker compose exec web pnpm",
+  "docker.commands.composeExecBash": "docker compose exec web bash",
+  "docker.commands.composeExecSh": "docker compose exec web sh",
+  "docker.commands.composeExecZsh": "docker compose exec web zsh",
+  "docker.commands.composeExecRoot": "docker compose exec --user root web",
+  "docker.commands.composeExecRootBash": "docker compose exec --user root web bash",
+  "docker.commands.composeExecRootSh": "docker compose exec --user root web sh",
+  "docker.commands.composeExecRootZsh": "docker compose exec --user root web zsh",
+  "docker.commands.composeExecRootNpm": "docker compose exec --user root web npm",
+  "docker.commands.composeExecRootYarn": "docker compose exec --user root web yarn",
+  "docker.commands.composeExecRootPnpm": "docker compose exec --user root web pnpm",
   "codeChangeRules": {
     "strictMode": true,
     "preserveExistingFunctionality": true,
@@ -55,6 +69,23 @@
     "documentation": {
       "required": true,
       "includeOriginalBehavior": true
+    },
+    "existingCode": {
+      "preserve": true,
+      "modification": "forbidden",
+      "exceptions": ["explicitly_requested"]
+    },
+    "coupling": {
+      "preferLooseCoupling": true,
+      "avoidTightCoupling": true,
+      "guidelines": [
+        "Use dependency injection",
+        "Implement interfaces",
+        "Follow SOLID principles",
+        "Use composition over inheritance",
+        "Keep components independent",
+        "Use event-driven architecture when appropriate"
+      ]
     }
   }
 } 

@@ -2,30 +2,35 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '../lib/hooks/useAuth'
+import { useAuth } from '@/lib/hooks/useAuth'
 
 interface AuthGuardProps {
   children: React.ReactNode
 }
 
-export const AuthGuard = ({ children }: AuthGuardProps) => {
-  const { isLoading, isAuthenticated } = useAuth()
+export function AuthGuard({ children }: AuthGuardProps) {
   const router = useRouter()
+  const { isAuthenticated, loading } = useAuth()
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    console.log('AuthGuard: 認証状態の確認', { isAuthenticated, loading })
+    if (!loading && !isAuthenticated) {
+      console.log('AuthGuard: 未認証のためログインページにリダイレクト')
       const currentPath = window.location.pathname
       router.push(`/login?redirectedFrom=${encodeURIComponent(currentPath)}`)
     }
-  }, [isLoading, isAuthenticated, router])
+  }, [isAuthenticated, loading, router])
 
-  if (isLoading) {
-    return <div>Loading...</div>
-  }
-
-  if (!isAuthenticated) {
+  if (loading) {
+    console.log('AuthGuard: ローディング中')
     return null
   }
 
+  if (!isAuthenticated) {
+    console.log('AuthGuard: 未認証')
+    return null
+  }
+
+  console.log('AuthGuard: 認証済み')
   return <>{children}</>
 } 

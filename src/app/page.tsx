@@ -2,117 +2,97 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import Link from 'next/link'
 import { AuthGuard } from '../components/AuthGuard'
+import Image from 'next/image'
 
-type Customer = {
-  id: number
-  pass: string
-  created_at: string  // timestamptz型はstring型として扱う
+type Post = {
+  id: string
+  created_at: string
+  image_url: string
 }
 
 export default function Home() {
-  const [connectionStatus, setConnectionStatus] = useState<string>('Checking...')
-  const [customers, setCustomers] = useState<Customer[]>([])
+  const [posts, setPosts] = useState<Post[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    async function fetchCustomers() {
+    async function fetchPosts() {
       try {
-        console.log('Fetching data from Supabase...')
-        const response = await supabase.from('customer_ids').select('*')
-        console.log('Full Supabase response:', response)
-        
-        if (response.error) throw response.error
-        
-        if (response.data && response.data.length > 0) {
-          console.log('Fetched data:', response.data)
-          setCustomers(response.data)
-          console.log('Customers state updated:', response.data.length, 'records')
-          setConnectionStatus('Connected to Supabase successfully!')
-        } else {
-          console.log('No data found in customer_ids table')
-          setConnectionStatus('Connected, but no data found')
-        }
-      } catch (error: any) {
-        setConnectionStatus(`Connection error: ${error?.message || 'Unknown error'}`)
-        console.error('Supabase connection error:', error)
+        const { data: files, error: listError } = await supabase.storage
+          .from('customer.post.images')
+          .list()
+
+        if (listError) throw listError
+
+        const posts = await Promise.all(
+          files.map(async (file) => {
+            const { data: { publicUrl } } = supabase.storage
+              .from('customer.post.images')
+              .getPublicUrl(file.name)
+
+            return {
+              id: file.name,
+              created_at: file.created_at,
+              image_url: publicUrl
+            }
+          })
+        )
+
+        // 作成日時の新しい順にソート
+        posts.sort((a, b) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )
+
+        setPosts(posts)
+      } catch (err: any) {
+        setError(err.message)
+      } finally {
+        setLoading(false)
       }
     }
-    
-    fetchCustomers()
+
+    fetchPosts()
   }, [])
 
   return (
     <AuthGuard>
-      <main className="flex min-h-screen flex-col items-center p-24">
-        <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm">
-          <h1 className="text-4xl font-bold text-center mb-8">
-            Welcome to Skill Shop
+      <main className="flex min-h-screen flex-col items-center p-4">
+        <div className="max-w-2xl w-full">
+          <h1 className="text-3xl font-bold text-center mb-8">
+            Skill Shop
           </h1>
-          <p className="text-center mb-4">
-            スキルを売りたい人と買いたい人をつなぐマッチングプラットフォーム
-          </p>
 
-          {/* ログイン・登録リンク */}
-          <div className="flex justify-center gap-4 my-8">
-            <Link 
-              href="/login" 
-              className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-            >
-              ログイン
-            </Link>
-            <Link 
-              href="/register" 
-              className="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-            >
-              新規登録
-            </Link>
-          </div>
-
-          {/* 画像アップロードと表示機能へのリンク */}
-          <div className="flex justify-center gap-4 my-4">
-            <Link 
-              href="/upload" 
-              className="px-6 py-3 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
-            >
-              画像をアップロード
-            </Link>
-            <Link 
-              href="/gallery" 
-              className="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
-            >
-              画像ギャラリーを見る
-            </Link>
-          </div>
-
-          <div className="mt-8 p-4 bg-gray-100 rounded-lg">
-            <p className="text-center mb-4">
-              Supabase Status: <span className={connectionStatus.includes('error') ? 'text-red-500' : 'text-green-500'}>{connectionStatus}</span>
-            </p>
-            
-            <div className="overflow-x-auto">
-              <table className="min-w-full bg-white border border-gray-300 mt-4">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                    <th className="px-6 py-3 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pass</th>
-                    <th className="px-6 py-3 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {customers.map((customer) => (
-                    <tr key={customer.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{customer.id}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{customer.pass}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(customer.created_at).toLocaleString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
             </div>
-          </div>
+          ) : error ? (
+            <div className="text-red-500 text-center p-4">{error}</div>
+          ) : posts.length === 0 ? (
+            <div className="text-center text-gray-500 p-8">
+              まだ投稿がありません。最初の投稿をしてみましょう！
+            </div>
+          ) : (
+            <div className="space-y-8">
+              {posts.map((post) => (
+                <article key={post.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <div className="relative aspect-square">
+                    <img
+                      src={post.image_url}
+                      alt="投稿画像"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="p-4">
+                    <p className="text-sm text-gray-500">
+                      {new Date(post.created_at).toLocaleString('ja-JP')}
+                    </p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
         </div>
       </main>
     </AuthGuard>
