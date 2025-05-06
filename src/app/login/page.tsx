@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { loginCustomerUser } from '@/lib/customer_user'
-import { useAuth } from '@/lib/hooks/useAuth'
+import { loginCustomerUser } from '@/libs/customer_user'
+import { useAuth } from '@/libs/hooks/useAuth'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -87,21 +87,25 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
+                isLoading
+                  ? 'bg-indigo-400 cursor-not-allowed'
+                  : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+              }`}
             >
               {isLoading ? 'ログイン中...' : 'ログイン'}
             </button>
           </div>
-        </form>
 
-        <div className="text-center">
-          <Link
-            href="/register"
-            className="font-medium text-indigo-600 hover:text-indigo-500"
-          >
-            新規登録はこちら
-          </Link>
-        </div>
+          <div className="text-sm text-center">
+            <Link
+              href="/register"
+              className="font-medium text-indigo-600 hover:text-indigo-500"
+            >
+              アカウントをお持ちでない方はこちら
+            </Link>
+          </div>
+        </form>
       </div>
     </div>
   )

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useAuth } from '@/lib/hooks/useAuth'
+import { useAuth } from '@/libs/hooks/useAuth'
 
 export function Footer() {
   const { isAuthenticated } = useAuth()

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '../lib/supabase'
+import { supabase } from '@/libs/supabase'
 import { AuthGuard } from '../components/AuthGuard'
 
 type Post = {

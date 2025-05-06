@@ -3,7 +3,7 @@
 
 import { useState } from 'react'
 // Reactのstate管理のためのフックをインポート
-import { supabase } from '../../lib/supabase'
+import { supabase } from '@/libs/supabase'
 // Supabaseクライアントをインポート
 import Link from 'next/link'
 // ページ間のナビゲーション用のNextjsコンポーネント
