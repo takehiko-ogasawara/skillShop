@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { AuthGuard } from '../components/AuthGuard'
-import Image from 'next/image'
 
 type Post = {
   id: string
