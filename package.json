@@ -1,0 +1,32 @@
+{
+  "name": "skill-shop",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.3",
+    "autoprefixer": "^10.4.17",
+    "bcryptjs": "^2.4.3",
+    "next": "^14.2.26",
+    "postcss": "^8.4.33",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.3.3"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/next": "^8.0.7",
+    "@types/node": "^20.17.32",
+    "@types/react": "^18.3.20",
+    "@types/react-dom": "^18.3.7",
+    "@types/supabase": "^1.39.8",
+    "eslint": "^8.56.0",
+    "eslint-config-next": "14.1.0"
+  }
+}
