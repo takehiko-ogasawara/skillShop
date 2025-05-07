@@ -18,10 +18,10 @@ type FileObject = {
 // スケルトンUIのコンポーネント
 function SkeletonPost() {
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden animate-pulse">
-      <div className="relative aspect-square bg-gray-200" />
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden animate-pulse">
+      <div className="relative aspect-[4/5] bg-gray-200 dark:bg-gray-700" />
       <div className="p-4">
-        <div className="h-4 bg-gray-200 rounded w-1/3" />
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3" />
       </div>
     </div>
   )
@@ -30,10 +30,10 @@ function SkeletonPost() {
 // デフォルト画像のコンポーネント
 function DefaultPost() {
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden">
-      <div className="relative aspect-square bg-gray-100 flex items-center justify-center">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+      <div className="relative aspect-[4/5] bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
         <svg
-          className="w-16 h-16 text-gray-300"
+          className="w-16 h-16 text-gray-300 dark:text-gray-600"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -47,7 +47,27 @@ function DefaultPost() {
         </svg>
       </div>
       <div className="p-4">
-        <p className="text-sm text-gray-500">画像をアップロードしてください</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">画像をアップロードしてください</p>
+      </div>
+    </div>
+  )
+}
+
+// 画像コンポーネント
+function PostImage({ imageUrl, createdAt }: { imageUrl: string; createdAt: string }) {
+  return (
+    <div className="relative aspect-[4/5] bg-gray-100 dark:bg-gray-700">
+      <div className="absolute inset-0 flex items-center justify-center">
+        <img
+          src={imageUrl}
+          alt="投稿画像"
+          className="max-w-full max-h-full object-contain"
+        />
+      </div>
+      <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/50 to-transparent">
+        <p className="text-sm text-white">
+          {new Date(createdAt).toLocaleString('ja-JP')}
+        </p>
       </div>
     </div>
   )
@@ -99,22 +119,22 @@ export default function Home() {
 
   return (
     <AuthGuard>
-      <main className="flex min-h-screen flex-col items-center p-4">
-        <div className="w-[390px]">
-          <h1 className="text-3xl font-bold text-center mb-8">
+      <main className="flex min-h-screen flex-col items-center p-4 bg-white dark:bg-gray-900">
+        <div className="w-[390px] mx-4">
+          <h1 className="text-3xl font-bold text-center mb-8 text-gray-900 dark:text-white">
             Skill Shop
           </h1>
 
           {loading ? (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-4">
               {[...Array(4)].map((_, index) => (
                 <SkeletonPost key={index} />
               ))}
             </div>
           ) : error ? (
-            <div className="text-red-500 text-center p-4">{error}</div>
+            <div className="text-red-500 dark:text-red-400 text-center p-4">{error}</div>
           ) : (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-4">
               {posts.length === 0 ? (
                 // 投稿がない場合は4つのデフォルト画像を表示
                 [...Array(4)].map((_, index) => (
@@ -123,19 +143,8 @@ export default function Home() {
               ) : (
                 // 投稿がある場合は最大4つまで表示
                 posts.slice(0, 4).map((post) => (
-                  <article key={post.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-                    <div className="relative aspect-square">
-                      <img
-                        src={post.image_url}
-                        alt="投稿画像"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="p-4">
-                      <p className="text-sm text-gray-500">
-                        {new Date(post.created_at).toLocaleString('ja-JP')}
-                      </p>
-                    </div>
+                  <article key={post.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+                    <PostImage imageUrl={post.image_url} createdAt={post.created_at} />
                   </article>
                 ))
               )}
